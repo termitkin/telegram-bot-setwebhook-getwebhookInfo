@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Telegram bot set webhook</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            box-sizing: border-box;
+        }
+        .page-heading {
+            margin-top: 0;
+        }
+        .content {
+            display: flex;
+            flex-direction: column;
+        }
+        .label {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .input {
+            max-width: 100%;
+            padding: 5px 10px;
+        }
+        .input-description {
+            margin: 5px 0 20px 0;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .button {
+            cursor: pointer;
+            width: 200px;
+            padding: 5px 10px;
+        }
+        table {
+            margin-top: 20px;
+        }
+        thead {
+            background-color: blue;
+            color: #fff;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #eee;
+        }
+        td {
+            word-break: break-word;
+            min-width: 200px;
+        }
+        .is-hidden {
+            display: none;
+        }
+        .error-message {
+            margin: 20px 0 0;
+            background-color: red;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-heading">Telegram bot setWebhook & getWebhookInfo</h1>
+        <form class="content" method="GET">
+            <label class="label">
+                Bot token
+                <input name="botToken" class="input" type="text" placeholder="enter bot token" required />
+            </label>
+            <p class="input-description">You can get token from <a href="https://t.me/BotFather" class="link" target="_blank" rel="noopener nofollow">@BotFather</a></p>
+
+            <label class="label">
+                Webhook url (must starts from https)
+                <input name="url" class="input" type="text" placeholder="enter webhook url" />
+            </label>
+            <p class="input-description">HTTPS url to send updates to. Use an empty string to remove webhook integration</p>
+
+            <label class="label">
+                Ip address
+                <input name="ip_address" class="input" type="text" placeholder="enter server ip" />
+            </label>
+            <p class="input-description">The fixed IP address which will be used to send webhook requests instead of the IP address resolved through DNS</p>
+
+            <label class="label">
+                max_connections
+                <input name="max_connections" class="input" min="1" max="100" type="number" placeholder="enter number from 1 to 100" />
+            </label>
+            <p class="input-description">Maximum allowed number of simultaneous HTTPS connections to the webhook for update delivery, 1-100. Defaults to 40. Use lower values to limit the load on your bot's server, and higher values to increase your bot's throughput.</p>
+
+            <label class="label">
+                allowed_updates
+                <input name="allowed_updates" class="input" type="text" placeholder="enter update types with comma separator" />
+            </label>
+            <p class="input-description">A JSON-serialized list of the update types you want your bot to receive. For example, specify [“message”, “edited_channel_post”, “callback_query”] to only receive updates of these types. See <a href="https://core.telegram.org/bots/api#update" class="link" target="_blank" rel="noopener nofollow">Update</a> for a complete list of available update types. Specify an empty list to receive all update types except chat_member (default). If not specified, the previous setting will be used.
+                Please note that this parameter doesn't affect updates created before the call to the setWebhook, so unwanted updates may be received for a short period of time.</p>
+
+            <label class="label">
+                Your public key certificate
+                <input name="certificate" class="input" type="file" placeholder="enter webhook url" />
+            </label>
+            <p class="input-description">Upload your public key certificate so that the root certificate in use can be checked. See our <a href="https://core.telegram.org/bots/self-signed" class="link" target="_blank" rel="noopener nofollow">self-signed guide</a> for details.</p>
+
+            <label class="label">
+                drop_pending_updates
+                <input name="drop_pending_updates" class="input" type="checkbox" />
+            </label>
+            <p class="input-description">Drop all pending updates</p>
+
+            <div class="buttons">
+                <button class="button" type="submit">setWebhook</button>
+                <button class="button" id="getWebhookInfo" type="button">getWebhookInfo</button>
+            </div>
+        </form>
+
+        <table class="is-hidden">
+            <thead>
+            <tr>
+                <td>Keys</td>
+                <td>Values</td>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <p class="error-message is-hidden">Something went wrong :( Check browser console</p>
+
+    </div>
+    <script>
+        const TELEGRAM_BOT_API_URL = 'https://api.telegram.org/bot';
+        const formElement = document.querySelector('.content');
+        const botTokenInput = document.querySelector('[name="botToken"]');
+        const getWebhookInfoButton = document.querySelector('#getWebhookInfo');
+        const table = document.querySelector('table');
+        const tbody = document.querySelector('tbody');
+        const errorMessageElem = document.querySelector('.error-message');
+
+        const createElement = (tag) => document.createElement(tag);
+
+        const setFormAction = (e) => {
+            const botToken = e.target.value;
+
+            formElement.action = `${TELEGRAM_BOT_API_URL}${botToken}/setWebhook`;
+        }
+
+        const getWebhookInfo = () => {
+            const botToken = botTokenInput.value;
+
+            return fetch(`${TELEGRAM_BOT_API_URL}${botToken}/getWebhookInfo`)
+                .then((res) => res.json());
+        }
+
+        const renderWebhookInfoData = (data) => {
+            table.classList.remove('is-hidden');
+            errorMessageElem.classList.add('is-hidden');
+            tbody.innerHTML = '';
+
+            for (const key in data) {
+                const tr = createElement('tr');
+
+                const cellWithKey = createElement('td');
+                const cellWithValue = createElement('td');
+
+                cellWithKey.textContent = key;
+                cellWithValue.textContent = data[key];
+
+                tr.appendChild(cellWithKey);
+                tr.appendChild(cellWithValue);
+
+                tbody.appendChild(tr);
+            }
+        }
+
+        const renderWebhookInfoError = () => {
+            table.classList.add('is-hidden');
+            errorMessageElem.classList.remove('is-hidden');
+        };
+
+        const handleWebhookInfoButtonClick = () => {
+            const webhookInfo = getWebhookInfo();
+
+            webhookInfo
+                .then((data) => {
+                    if (data.ok) {
+                        renderWebhookInfoData(data.result);
+                    } else {
+                        renderWebhookInfoError();
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                    renderWebhookInfoError();
+                })
+        }
+
+        getWebhookInfoButton.addEventListener('click', handleWebhookInfoButtonClick);
+        botTokenInput.addEventListener('input', setFormAction);
+    </script>
+</body>
+</html>
