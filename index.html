@@ -74,7 +74,7 @@
 <body>
     <div class="container">
         <h1 class="page-heading">Telegram bot setWebhook & getWebhookInfo</h1>
-        <form class="content" method="GET">
+        <form class="content" method="POST" enctype="multipart/form-data">
             <label class="label">
                 Bot token
                 <input name="botToken" class="input" type="text" placeholder="enter bot token" required />
@@ -141,6 +141,7 @@
         const TELEGRAM_BOT_API_URL = 'https://api.telegram.org/bot';
         const formElement = document.querySelector('.content');
         const botTokenInput = document.querySelector('[name="botToken"]');
+        const dropPendingUpdatesInput = document.querySelector('[name=drop_pending_updates]');
         const getWebhookInfoButton = document.querySelector('#getWebhookInfo');
         const table = document.querySelector('table');
         const tbody = document.querySelector('tbody');
@@ -204,6 +205,13 @@
                 })
         }
 
+        const handleDropPendingUpdatesInputValue = (e) => {
+            if (e.target.checked) {
+                e.target.value = true;
+            }
+        }
+
+        dropPendingUpdatesInput.addEventListener('change', handleDropPendingUpdatesInputValue);
         getWebhookInfoButton.addEventListener('click', handleWebhookInfoButtonClick);
         botTokenInput.addEventListener('input', setFormAction);
     </script>
