@@ -149,19 +149,6 @@
 
         const createElement = (tag) => document.createElement(tag);
 
-        const setFormAction = (e) => {
-            const botToken = e.target.value;
-
-            formElement.action = `${TELEGRAM_BOT_API_URL}${botToken}/setWebhook`;
-        }
-
-        const getWebhookInfo = () => {
-            const botToken = botTokenInput.value;
-
-            return fetch(`${TELEGRAM_BOT_API_URL}${botToken}/getWebhookInfo`)
-                .then((res) => res.json());
-        }
-
         const renderWebhookInfoData = (data) => {
             table.classList.remove('is-hidden');
             errorMessageElem.classList.add('is-hidden');
@@ -183,26 +170,31 @@
             }
         }
 
+        const getWebhookInfo = () => {
+            const botToken = botTokenInput.value;
+
+            return fetch(`${TELEGRAM_BOT_API_URL}${botToken}/getWebhookInfo`)
+                .then((res) => res.json());
+        }
+
         const renderWebhookInfoError = () => {
             table.classList.add('is-hidden');
             errorMessageElem.classList.remove('is-hidden');
         };
 
-        const handleWebhookInfoButtonClick = () => {
-            const webhookInfo = getWebhookInfo();
+        const handleWebhookInfoButtonClick = async () => {
+            try {
+                const res = await getWebhookInfo();
 
-            webhookInfo
-                .then((data) => {
-                    if (data.ok) {
-                        renderWebhookInfoData(data.result);
-                    } else {
-                        renderWebhookInfoError();
-                    }
-                })
-                .catch((err) => {
-                    console.log(err);
+                if (res.ok) {
+                    renderWebhookInfoData(res.result);
+                } else {
                     renderWebhookInfoError();
-                })
+                }
+            } catch (e) {
+                console.log(e);
+                renderWebhookInfoError();
+            }
         }
 
         const handleDropPendingUpdatesInputValue = (e) => {
@@ -211,9 +203,28 @@
             }
         }
 
+        const setFormAction = (e) => {
+            const botToken = e.target.value;
+
+            formElement.action = `${TELEGRAM_BOT_API_URL}${botToken}/setWebhook`;
+        }
+
+        const handleSubmit = (e) => {
+            e.preventDefault();
+
+            const certificateInput = e.target.querySelector('[name="certificate"]');
+
+            if (!certificateInput.files.length) {
+                certificateInput.remove();
+            }
+
+            e.target.submit();
+        }
+
         dropPendingUpdatesInput.addEventListener('change', handleDropPendingUpdatesInputValue);
         getWebhookInfoButton.addEventListener('click', handleWebhookInfoButtonClick);
         botTokenInput.addEventListener('input', setFormAction);
+        formElement.addEventListener('submit', handleSubmit);
     </script>
 </body>
 </html>
